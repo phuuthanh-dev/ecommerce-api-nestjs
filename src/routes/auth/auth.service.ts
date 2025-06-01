@@ -10,6 +10,8 @@ import { SharedUserRepository } from 'src/shared/repositories/shared-user.repo'
 import { addMilliseconds } from 'date-fns'
 import envConfig from 'src/shared/config'
 import ms from 'ms'
+import { TypeOfVerificationCode } from 'src/shared/constants/auth.constant'
+import { EmailService } from 'src/shared/services/email.service'
 
 @Injectable()
 export class AuthService {
@@ -20,10 +22,32 @@ export class AuthService {
     private readonly rolesService: RolesService,
     private readonly authRepository: AuthRepository,
     private readonly sharedUserRepository: SharedUserRepository,
+    private readonly emailService: EmailService,
   ) {}
 
   async register(body: RegisterBodyType) {
     try {
+      const verificationCode = await this.authRepository.findUniqueVerificationCode({
+        email: body.email,
+        code: body.code,
+        type: TypeOfVerificationCode.REGISTER,
+      })
+      if (!verificationCode) {
+        throw new UnprocessableEntityException([
+          {
+            path: 'code',
+            message: 'Invalid verification code',
+          },
+        ])
+      }
+      if (verificationCode.expiresAt < new Date()) {
+        throw new UnprocessableEntityException([
+          {
+            path: 'code',
+            message: 'Verification code has expired',
+          },
+        ])
+      }
       const clientRoleId = await this.rolesService.getClientRoleId()
       const hashedPassword = await this.hashingService.hash(body.password)
       return await this.authRepository.createUser({
@@ -44,11 +68,11 @@ export class AuthService {
   async sendOTP(body: SendOTPBodyType) {
     // 1. Kiểm tra email có tồn tại trong database không
     const user = await this.sharedUserRepository.findUnique({ email: body.email })
-    if (!user) {
+    if (user) {
       throw new UnprocessableEntityException([
         {
           path: 'email',
-          message: 'Email is not exists',
+          message: 'Email is already exists',
         },
       ])
     }
@@ -61,8 +85,16 @@ export class AuthService {
       expiresAt: addMilliseconds(new Date(), ms(envConfig.OTP_EXPIRES_IN)),
     })
     // 3. Gửi mã OTP đến email
-    // 4. Lưu mã OTP vào database
-    // 5. Trả về mã OTP
+    const { error } = await this.emailService.sendOTP({ email: body.email, code })
+    if (error) {
+      throw new UnprocessableEntityException([
+        {
+          path: 'code',
+          message: 'Failed to send OTP',
+        },
+      ])
+    }
+    // 4. Trả về mã OTP
     return verificationCode
   }
 
