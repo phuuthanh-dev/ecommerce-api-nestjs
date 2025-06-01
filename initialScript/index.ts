@@ -1,0 +1,63 @@
+import envConfig from 'src/shared/config'
+import { PrismaService } from 'src/shared/services/prisma.service'
+import { HashingService } from 'src/shared/services/hashing.service'
+import { RoleName } from 'src/shared/constants/role.constant'
+
+const prisma = new PrismaService()
+const hashingService = new HashingService()
+const main = async () => {
+  const roleCount = await prisma.role.count()
+  if (roleCount > 0) return
+  const roles = await prisma.role.createMany({
+    data: [
+      {
+        name: RoleName.Admin,
+        description: 'Admin role',
+      },
+      {
+        name: RoleName.Client,
+        description: 'Client role',
+      },
+      {
+        name: RoleName.Seller,
+        description: 'Seller role',
+      },
+    ],
+  })
+
+  const adminRole = await prisma.role.findFirstOrThrow({
+    where: {
+      name: RoleName.Admin,
+    },
+  })
+
+  const hashedPassword = await hashingService.hash(envConfig.ADMIN_PASSWORD)
+  const adminUser = await prisma.user.create({
+    data: {
+      email: envConfig.ADMIN_EMAIL,
+      password: hashedPassword,
+      name: envConfig.ADMIN_NAME,
+      phoneNumber: envConfig.ADMIN_PHONE_NUMBER,
+      roleId: adminRole.id,
+    },
+  })
+
+  return {
+    createdRoleCount: roles.count,
+    adminUser,
+  }
+}
+
+main()
+  .then((data) => {
+    if (data) {
+      console.log(`Created ${data.createdRoleCount} roles`)
+      console.log(`Created admin user: ${data.adminUser.id}`)
+    }
+  })
+  .catch((error) => {
+    console.error(error)
+  })
+  .finally(() => {
+    prisma.$disconnect()
+  })
