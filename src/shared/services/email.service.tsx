@@ -3,8 +3,8 @@ import { Resend } from 'resend'
 import envConfig from '../config'
 import { OTPEmail } from 'emails/otp'
 import * as React from 'react'
-// import fs from 'fs'
-// import path from 'path'
+// import { render } from '@react-email/render'
+// import { pretty } from '@react-email/components'
 
 @Injectable()
 export class EmailService {
@@ -14,15 +14,15 @@ export class EmailService {
     this.resend = new Resend(envConfig.RESEND_API_KEY)
   }
 
-  sendOTP(payload: { email: string; code: string }) {
-    // const otpTemplate = fs.readFileSync(path.resolve('src/shared/email-templates/otp.html'), 'utf8')
+  async sendOTP(payload: { email: string; code: string }) {
     const subject = 'Mã OTP'
+    // const html = await pretty(await render(<OTPEmail otpCode={payload.code} title={subject} />))
     return this.resend.emails.send({
       from: 'Nest.js Ecommerce <no-reply@phuuthanh.id.vn>',
       to: payload.email,
       subject,
       react: <OTPEmail otpCode={payload.code} title={subject} />,
-      // html: otpTemplate.replaceAll('{{code}}', payload.code).replaceAll('{{subject}}', subject),
+      // html,
     })
   }
 }
