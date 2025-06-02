@@ -1,43 +1,65 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common'
+import { Body, Controller, HttpCode, HttpStatus, Ip, Post } from '@nestjs/common'
 import { AuthService } from './auth.service'
-import { LoginBodyDTO, RegisterBodyDTO, RegisterResponseDTO, SendOTPBodyDTO } from './auth.dto'
+import {
+  LoginBodyDTO,
+  LoginResponseDTO,
+  LogoutBodyDTO,
+  RefreshTokenBodyDTO,
+  RefreshTokenResponseDTO,
+  RegisterBodyDTO,
+  RegisterResponseDTO,
+  SendOTPBodyDTO,
+} from './auth.dto'
 import { ZodSerializerDto } from 'nestjs-zod'
 import { UserAgent } from 'src/shared/decorators/user-agent.decorator'
-import { IP } from 'src/shared/decorators/ip.decorator'
+import { MessageResponseDTO } from 'src/shared/dtos/response.dto'
+import { IsPublic } from 'src/shared/decorators/auth.decorator'
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
+  @IsPublic()
   @ZodSerializerDto(RegisterResponseDTO)
-  async register(@Body() body: RegisterBodyDTO) {
-    return await this.authService.register(body)
+  register(@Body() body: RegisterBodyDTO) {
+    return this.authService.register(body)
   }
 
   @Post('otp')
-  async sendOTP(@Body() body: SendOTPBodyDTO) {
-    return await this.authService.sendOTP(body)
+  @IsPublic()
+  @ZodSerializerDto(MessageResponseDTO)
+  sendOTP(@Body() body: SendOTPBodyDTO) {
+    return this.authService.sendOTP(body)
   }
 
   @Post('login')
-  async login(@Body() body: LoginBodyDTO, @UserAgent() userAgent: string, @IP() ip: string) {
-    return await this.authService.login({
+  @IsPublic()
+  @ZodSerializerDto(LoginResponseDTO)
+  login(@Body() body: LoginBodyDTO, @UserAgent() userAgent: string, @Ip() ip: string) {
+    return this.authService.login({
       ...body,
       userAgent,
       ip,
     })
   }
 
-  // @Post('refresh-token')
-  // @HttpCode(HttpStatus.OK)
-  // async refreshToken(@Body() body: any) {
-  //   return await this.authService.refreshToken(body.refreshToken)
-  // }
+  @Post('refresh-token')
+  @IsPublic()
+  @HttpCode(HttpStatus.OK)
+  @ZodSerializerDto(RefreshTokenResponseDTO)
+  refreshToken(@Body() body: RefreshTokenBodyDTO, @UserAgent() userAgent: string, @Ip() ip: string) {
+    return this.authService.handleRefreshToken({
+      refreshToken: body.refreshToken,
+      userAgent,
+      ip,
+    })
+  }
 
-  // @Post('logout')
-  // @HttpCode(HttpStatus.OK)
-  // async logout(@Body() body: any) {
-  //   return await this.authService.logout(body.refreshToken)
-  // }
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  @ZodSerializerDto(MessageResponseDTO)
+  logout(@Body() body: LogoutBodyDTO) {
+    return this.authService.logout(body.refreshToken)
+  }
 }
