@@ -9,13 +9,24 @@ export class AuthRepository {
   constructor(private readonly prismaService: PrismaService) {}
 
   async createUser(
-    user: Omit<RegisterBodyType, 'confirmPassword' | 'code'> & Pick<UserType, 'roleId'>,
+    user: Pick<UserType, 'email' | 'name' | 'password' | 'phoneNumber' | 'roleId'>,
   ): Promise<Omit<UserType, 'password' | 'totpSecret'>> {
     return this.prismaService.user.create({
       data: user,
       omit: {
         password: true,
         totpSecret: true,
+      },
+    })
+  }
+
+  async createUserIncludeRole(
+    user: Pick<UserType, 'email' | 'name' | 'password' | 'phoneNumber' | 'avatar' | 'roleId'>,
+  ): Promise<UserType & { role: RoleType }> {
+    return this.prismaService.user.create({
+      data: user,
+      include: {
+        role: true,
       },
     })
   }
@@ -95,6 +106,28 @@ export class AuthRepository {
   deleteRefreshToken(uniqueObject: { token: string }): Promise<RefreshTokenType> {
     return this.prismaService.refreshToken.delete({
       where: uniqueObject,
+    })
+  }
+
+  updateUser(where: { id: number } | { email: string }, data: Partial<Omit<UserType, 'id'>>): Promise<UserType> {
+    return this.prismaService.user.update({
+      where,
+      data,
+    })
+  }
+
+  deleteVerificationCode(
+    where:
+      | { email: string }
+      | { id: number }
+      | {
+          email: string
+          code: string
+          type: TypeOfVerificationCodeType
+        },
+  ): Promise<VerificationCodeType> {
+    return this.prismaService.verificationCode.delete({
+      where,
     })
   }
 }

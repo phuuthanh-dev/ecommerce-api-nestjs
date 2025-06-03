@@ -23,12 +23,10 @@ export const RegisterBodySchema = UserSchema.pick({
     }
   })
 
-
 export const RegisterResponseSchema = UserSchema.omit({
   password: true,
   totpSecret: true,
 })
-
 
 export const VerificationCodeSchema = z.object({
   id: z.number(),
@@ -39,24 +37,20 @@ export const VerificationCodeSchema = z.object({
   createdAt: z.date(),
 })
 
-
 export const SendOTPBodySchema = VerificationCodeSchema.pick({
   email: true,
   type: true,
 }).strict()
-
 
 export const LoginBodySchema = UserSchema.pick({
   email: true,
   password: true,
 }).strict()
 
-
 export const LoginResponseSchema = z.object({
   accessToken: z.string(),
   refreshToken: z.string(),
 })
-
 
 export const RefreshTokenBodySchema = z
   .object({
@@ -64,9 +58,7 @@ export const RefreshTokenBodySchema = z
   })
   .strict()
 
-
 export const RefreshTokenResponseSchema = LoginResponseSchema
-
 
 export const DeviceSchema = z.object({
   id: z.number(),
@@ -86,7 +78,6 @@ export const RefreshTokenSchema = z.object({
   createdAt: z.date(),
 })
 
-
 export const RoleSchema = z.object({
   id: z.number(),
   name: z.string(),
@@ -99,8 +90,34 @@ export const RoleSchema = z.object({
   updatedAt: z.date(),
 })
 
-
 export const LogoutBodySchema = RefreshTokenBodySchema
+
+export const GoogleAuthStateSchema = DeviceSchema.pick({
+  userAgent: true,
+  ip: true,
+})
+
+export const GetAuthorizationUrlResponseSchema = z.object({
+  url: z.string().url(),
+})
+
+export const ForgotPasswordBodySchema = z
+  .object({
+    email: z.string().email(),
+    code: z.string().length(6),
+    newPassword: z.string().min(6).max(100),
+    confirmNewPassword: z.string().min(6).max(100),
+  })
+  .strict()
+  .superRefine(({ confirmNewPassword, newPassword }, ctx) => {
+    if (confirmNewPassword !== newPassword) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Mật khẩu và mật khẩu xác nhận không khớp',
+        path: ['confirmNewPassword'],
+      })
+    }
+  })
 
 export type RegisterBodyType = z.infer<typeof RegisterBodySchema>
 export type RegisterResponseType = z.infer<typeof RegisterResponseSchema>
@@ -114,3 +131,6 @@ export type RefreshTokenResponseType = LoginResponseType
 export type DeviceType = z.infer<typeof DeviceSchema>
 export type RoleType = z.infer<typeof RoleSchema>
 export type LogoutBodyType = RefreshTokenBodyType
+export type GoogleAuthStateType = z.infer<typeof GoogleAuthStateSchema>
+export type GetAuthorizationUrlResponseType = z.infer<typeof GetAuthorizationUrlResponseSchema>
+export type ForgotPasswordBodyType = z.infer<typeof ForgotPasswordBodySchema>
