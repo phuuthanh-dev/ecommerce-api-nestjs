@@ -57,3 +57,35 @@ export const GoogleUserInfoError = new UnprocessableEntityException([
     message: 'Lấy thông tin người dùng từ google thất bại',
   },
 ])
+
+export const TOTPAlreadySetupException = new UnprocessableEntityException([
+  {
+    path: 'totpCode',
+    message: '2FA đã được cài đặt',
+  },
+])
+
+export const TOTPNotSetupException = new UnprocessableEntityException([
+  {
+    path: 'totpCode',
+    message: '2FA chưa được cài đặt',
+  },
+])
+
+export const InvalidTOTPAndCodeException = new UnprocessableEntityException([
+  {
+    path: 'totpCode',
+    message: 'Mã xác thực 2FA không hợp lệ',
+  },
+  {
+    path: 'code',
+    message: 'Mã xác thực 2FA không hợp lệ',
+  },
+])
+
+export const InvalidTOTPException = new UnprocessableEntityException([
+  {
+    path: 'totpCode',
+    message: 'Mã xác thực 2FA không hợp lệ',
+  },
+])
