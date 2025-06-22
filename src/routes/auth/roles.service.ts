@@ -25,5 +25,3 @@ export class RolesService {
     return role.id
   }
 }
-
-new RolesService(new PrismaService()).getClientRoleId()
