@@ -30,8 +30,8 @@ import {
   RefreshTokenInvalidException,
   TOTPAlreadySetupException,
   TOTPNotSetupException,
-} from './error.model'
-import { ExpiredOTPException } from './error.model'
+} from './auth.error'
+import { ExpiredOTPException } from './auth.error'
 import { TwoFactorService } from 'src/shared/services/2fa.service'
 
 @Injectable()
