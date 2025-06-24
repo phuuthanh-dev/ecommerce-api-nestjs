@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common'
 import { RoleRepository } from './role.repo'
 import { CreateRoleBodyType, GetRolesQueryType, UpdateRoleBodyType } from './role.model'
-import { RoleAlreadyExistsException, RoleNotFoundException } from './role.error'
+import { ProhibitedActionOnAdminRoleException, ProhibitedActionOnBaseRoleException, RoleAlreadyExistsException, RoleNotFoundException } from './role.error'
 import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from 'src/shared/helpers'
 import { NotFoundRecordException } from 'src/shared/error'
+import { RoleName } from 'src/shared/constants/role.constant'
 
 @Injectable()
 export class RoleService {
@@ -36,8 +37,18 @@ export class RoleService {
 
   async update({ id, data, updatedById }: { id: number; data: UpdateRoleBodyType; updatedById: number }) {
     try {
-      const role = await this.roleRepository.update({ id, updatedById, data })
-      return role
+      const role = await this.roleRepository.findById(id)
+      if (!role) {
+        throw NotFoundRecordException
+      }
+
+      // Không cho phép bất kỳ ai có thể sửa ADMIN
+      if (role.name === RoleName.Admin) {
+        throw ProhibitedActionOnAdminRoleException
+      }
+
+      const updatedRole = await this.roleRepository.update({ id, updatedById, data })
+      return updatedRole
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw NotFoundRecordException
@@ -51,6 +62,17 @@ export class RoleService {
 
   async delete({ id, deletedById }: { id: number; deletedById: number }) {
     try {
+      const role = await this.roleRepository.findById(id)
+      if (!role) {
+        throw NotFoundRecordException
+      }
+
+      // Không cho phép bất kỳ ai có thể xóa 3 role cơ bản
+      const baseRoles: string[] = [RoleName.Admin, RoleName.Client, RoleName.Seller]
+      if (baseRoles.includes(role.name)) {
+        throw ProhibitedActionOnBaseRoleException
+      }
+
       await this.roleRepository.delete({ id, deletedById })
       return {
         message: 'Xóa vai trò thành công',

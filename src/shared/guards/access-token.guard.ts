@@ -3,6 +3,7 @@ import { TokenService } from '../services/token.service'
 import { REQUEST_USER_KEY } from '../constants/auth.constant'
 import { AccessTokenPayload } from '../types/jwt.type'
 import { PrismaService } from '../services/prisma.service'
+import { HTTPMethod } from '../constants/role.constant'
 
 @Injectable()
 export class AccessTokenGuard implements CanActivate {
@@ -43,9 +44,9 @@ export class AccessTokenGuard implements CanActivate {
   }
 
   private async validateUserPermission(decodedAccessToken: AccessTokenPayload, request: any): Promise<void> {
-    const roleId = decodedAccessToken.roleId
-    const path = request.route.path
-    const method = request.method
+    const roleId: number = decodedAccessToken.roleId
+    const path: string = request.route.path
+    const method = request.method as keyof typeof HTTPMethod
     const role = await this.prismaService.role
       .findUniqueOrThrow({
         where: {

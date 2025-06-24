@@ -1,4 +1,4 @@
-import { UnprocessableEntityException } from '@nestjs/common'
+import { ForbiddenException, UnprocessableEntityException } from '@nestjs/common'
 
 export const RoleAlreadyExistsException = new UnprocessableEntityException([
   {
@@ -13,3 +13,11 @@ export const RoleNotFoundException = new UnprocessableEntityException([
     path: 'id',
   },
 ])
+
+export const ProhibitedActionOnBaseRoleException = new ForbiddenException(
+  'Không thể thực hiện hành động này trên role cơ bản (ADMIN, CLIENT, SELLER)',
+)
+
+export const ProhibitedActionOnAdminRoleException = new ForbiddenException(
+  'Không thể thực hiện hành động này trên role ADMIN',
+)
