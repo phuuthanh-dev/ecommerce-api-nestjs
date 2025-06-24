@@ -17,7 +17,3 @@ export const RoleNotFoundException = new UnprocessableEntityException([
 export const ProhibitedActionOnBaseRoleException = new ForbiddenException(
   'Không thể thực hiện hành động này trên role cơ bản (ADMIN, CLIENT, SELLER)',
 )
-
-export const ProhibitedActionOnAdminRoleException = new ForbiddenException(
-  'Không thể thực hiện hành động này trên role ADMIN',
-)

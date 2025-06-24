@@ -189,6 +189,7 @@ model Permission {
   description String     @default("")
   path        String     @db.VarChar(1000)
   method      HTTPMethod
+  module      String     @default("") @db.VarChar(500)
   roles       Role[]
 
   createdById Int?
@@ -336,7 +337,7 @@ model Variant {
   deletedById Int?
   deletedBy   User? @relation("VariantDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
-  deletedAt DateTime? 
+  deletedAt DateTime?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 

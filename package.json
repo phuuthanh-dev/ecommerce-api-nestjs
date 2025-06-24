@@ -29,7 +29,7 @@
     "@nestjs/core": "^11.0.1",
     "@nestjs/jwt": "^11.0.0",
     "@nestjs/platform-express": "^11.0.1",
-    "@prisma/client": "^6.8.2",
+    "@prisma/client": "^6.10.1",
     "@react-email/components": "0.0.41",
     "bcrypt": "^6.0.0",
     "date-fns": "^4.1.0",

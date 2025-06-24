@@ -51,6 +51,7 @@ export class AccessTokenGuard implements CanActivate {
       .findUniqueOrThrow({
         where: {
           id: roleId,
+          isActive: true,
           deletedAt: null,
         },
         include: {
