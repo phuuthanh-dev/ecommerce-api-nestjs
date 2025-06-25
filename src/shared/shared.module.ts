@@ -10,11 +10,13 @@ import { APP_GUARD } from '@nestjs/core'
 import { SharedUserRepository } from './repositories/shared-user.repo'
 import { EmailService } from './services/email.service'
 import { TwoFactorService } from './services/2fa.service'
+import { SharedRoleRepository } from './repositories/shared-role.repo'
 
 const sharedServices = [
   PrismaService,
   HashingService,
   TokenService,
+  SharedRoleRepository,
   SharedUserRepository,
   EmailService,
   TwoFactorService,

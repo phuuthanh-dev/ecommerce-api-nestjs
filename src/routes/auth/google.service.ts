@@ -4,7 +4,7 @@ import { OAuth2Client } from 'google-auth-library'
 import envConfig from 'src/shared/config'
 import { GoogleAuthStateType } from './auth.model'
 import { AuthRepository } from './auth.repo'
-import { RolesService } from './roles.service'
+import { SharedRoleRepository } from '../../shared/repositories/shared-role.repo'
 import { HashingService } from 'src/shared/services/hashing.service'
 import { AuthService } from './auth.service'
 import { v4 as uuidv4 } from 'uuid'
@@ -16,7 +16,7 @@ export class GoogleService {
 
   constructor(
     private readonly hashingService: HashingService,
-    private readonly rolesService: RolesService,
+    private readonly sharedRoleRepository: SharedRoleRepository,
     private readonly authService: AuthService,
     private readonly authRepository: AuthRepository,
   ) {
@@ -74,7 +74,7 @@ export class GoogleService {
       })
       // Nếu user chưa tồn tại thì tạo user, sẽ tiến hành đăng ký
       if (!user) {
-        const clientRoleId = await this.rolesService.getClientRoleId()
+        const clientRoleId = await this.sharedRoleRepository.getClientRoleId()
         const randomPassword = uuidv4()
         const hashedPassword = await this.hashingService.hash(randomPassword)
         user = await this.authRepository.createUserIncludeRole({

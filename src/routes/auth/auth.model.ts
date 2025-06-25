@@ -168,7 +168,6 @@ export type RefreshTokenType = z.infer<typeof RefreshTokenSchema>
 export type RefreshTokenBodyType = z.infer<typeof RefreshTokenBodySchema>
 export type RefreshTokenResponseType = LoginResponseType
 export type DeviceType = z.infer<typeof DeviceSchema>
-export type RoleType = z.infer<typeof RoleSchema>
 export type LogoutBodyType = RefreshTokenBodyType
 export type GoogleAuthStateType = z.infer<typeof GoogleAuthStateSchema>
 export type GetAuthorizationUrlResponseType = z.infer<typeof GetAuthorizationUrlResponseSchema>
