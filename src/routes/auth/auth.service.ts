@@ -26,13 +26,13 @@ import {
   InvalidOTPException,
   InvalidTOTPAndCodeException,
   InvalidTOTPException,
-  PasswordIncorrectException,
   RefreshTokenInvalidException,
   TOTPAlreadySetupException,
   TOTPNotSetupException,
 } from './auth.error'
 import { ExpiredOTPException } from './auth.error'
 import { TwoFactorService } from 'src/shared/services/2fa.service'
+import { InvalidPasswordException } from 'src/shared/error'
 
 @Injectable()
 export class AuthService {
@@ -81,7 +81,7 @@ export class AuthService {
   }
 
   async sendOTP(body: SendOTPBodyType) {
-    const user = await this.sharedUserRepository.findUnique({ email: body.email })
+    const user = await this.sharedUserRepository.findUnique({ email: body.email, deletedAt: null })
     if (body.type === TypeOfVerificationCode.REGISTER && user) {
       throw EmailAlreadyExistsException
     }
@@ -107,7 +107,7 @@ export class AuthService {
 
   async login(body: LoginBodyType & { userAgent: string; ip: string }) {
     // 1. Lấy thông tin user, kiểm tra email có tồn tại trong database không
-    const user = await this.authRepository.findUniqueUserIncludeRole({ email: body.email })
+    const user = await this.authRepository.findUniqueUserIncludeRole({ email: body.email, deletedAt: null })
 
     if (!user) {
       throw EmailNotExistsException
@@ -115,7 +115,7 @@ export class AuthService {
 
     const isPasswordValid = await this.hashingService.compare(body.password, user.password)
     if (!isPasswordValid) {
-      throw PasswordIncorrectException
+      throw InvalidPasswordException
     }
 
     // 2. Nếu user đã setup 2FA, kiểm tra mã OTP có hợp lệ không
@@ -233,7 +233,7 @@ export class AuthService {
   async forgotPassword(body: ForgotPasswordBodyType) {
     const { email, code, newPassword } = body
     // 1. Kiểm tra email có tồn tại trong database không
-    const user = await this.sharedUserRepository.findUnique({ email })
+    const user = await this.sharedUserRepository.findUnique({ email, deletedAt: null })
     if (!user) {
       throw EmailNotExistsException
     }
@@ -246,12 +246,14 @@ export class AuthService {
     // 3. Cập nhật mật khẩu mới và xóa đi OTP
     const hashedPassword = await this.hashingService.hash(newPassword)
     await Promise.all([
-      this.authRepository.updateUser(
+      this.sharedUserRepository.update(
         {
           id: user.id,
+          deletedAt: null,
         },
         {
           password: hashedPassword,
+          updatedById: user.id,
         },
       ),
       this.authRepository.deleteVerificationCode({
@@ -268,7 +270,7 @@ export class AuthService {
 
   async setupTwoFactorAuth(userId: number) {
     // 1. Kiểm tra user có tồn tại trong database không
-    const user = await this.sharedUserRepository.findUnique({ id: userId })
+    const user = await this.sharedUserRepository.findUnique({ id: userId, deletedAt: null })
     if (!user) {
       throw EmailNotExistsException
     }
@@ -280,12 +282,14 @@ export class AuthService {
     const { secret, uri } = this.twoFactorService.generateOTPSecret(user.email)
 
     // 3. Cập nhật secret cho user
-    await this.authRepository.updateUser(
+    await this.sharedUserRepository.update(
       {
         id: userId,
+        deletedAt: null,
       },
       {
         totpSecret: secret,
+        updatedById: userId,
       },
     )
 
@@ -295,7 +299,7 @@ export class AuthService {
 
   async disableTwoFactorAuth({ userId, totpCode, code }: DisableTwoFactorBodyType & { userId: number }) {
     // 1. Kiểm tra user có tồn tại trong database không
-    const user = await this.sharedUserRepository.findUnique({ id: userId })
+    const user = await this.sharedUserRepository.findUnique({ id: userId, deletedAt: null })
     if (!user) {
       throw EmailNotExistsException
     }
@@ -323,12 +327,14 @@ export class AuthService {
     }
 
     // 3. Cập nhật secret cho user thành null
-    await this.authRepository.updateUser(
+    await this.sharedUserRepository.update(
       {
         id: userId,
+        deletedAt: null,
       },
       {
         totpSecret: null,
+        updatedById: userId,
       },
     )
 

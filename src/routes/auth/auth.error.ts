@@ -35,13 +35,6 @@ export const EmailNotExistsException = new UnprocessableEntityException([
   },
 ])
 
-export const PasswordIncorrectException = new UnprocessableEntityException([
-  {
-    path: 'password',
-    message: 'Mật khẩu không chính xác',
-  },
-])
-
 export const GoogleLoginFailedException = new UnprocessableEntityException([
   {
     path: 'google',

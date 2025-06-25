@@ -6,7 +6,7 @@ import { PermissionType } from '../models/shared-permisson.model'
 
 type UserIncludeRolePermissionType = UserType & { role: RoleType & { permissions: PermissionType[] } }
 
-type WhereUniqueUserType = { id: number; [key: string]: any } | { email: string; [key: string]: any }
+export type WhereUniqueUserType = { id: number; [key: string]: any } | { email: string; [key: string]: any }
 
 @Injectable()
 export class SharedUserRepository {
