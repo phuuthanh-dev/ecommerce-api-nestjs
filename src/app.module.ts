@@ -12,9 +12,10 @@ import { RoleModule } from './routes/role/role.module';
 import { ProfileModule } from './routes/profile/profile.module';
 import { UserModule } from './routes/user/user.module';
 import CustomZodValidationPipe from './shared/pipes/custom-zod-validation.pipe'
+import { MediaModule } from './routes/media/media.module'
 
 @Module({
-  imports: [SharedModule, AuthModule, LanguageModule, PermissionModule, RoleModule, ProfileModule, UserModule],
+  imports: [SharedModule, AuthModule, LanguageModule, PermissionModule, RoleModule, ProfileModule, UserModule, MediaModule],
   controllers: [AppController],
   providers: [
     AppService,
