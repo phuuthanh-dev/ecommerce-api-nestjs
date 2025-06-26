@@ -81,7 +81,7 @@ export class AuthService {
   }
 
   async sendOTP(body: SendOTPBodyType) {
-    const user = await this.sharedUserRepository.findUnique({ email: body.email, deletedAt: null })
+    const user = await this.sharedUserRepository.findUnique({ email: body.email })
     if (body.type === TypeOfVerificationCode.REGISTER && user) {
       throw EmailAlreadyExistsException
     }
@@ -107,7 +107,7 @@ export class AuthService {
 
   async login(body: LoginBodyType & { userAgent: string; ip: string }) {
     // 1. Lấy thông tin user, kiểm tra email có tồn tại trong database không
-    const user = await this.authRepository.findUniqueUserIncludeRole({ email: body.email, deletedAt: null })
+    const user = await this.authRepository.findUniqueUserIncludeRole({ email: body.email })
 
     if (!user) {
       throw EmailNotExistsException
@@ -233,7 +233,7 @@ export class AuthService {
   async forgotPassword(body: ForgotPasswordBodyType) {
     const { email, code, newPassword } = body
     // 1. Kiểm tra email có tồn tại trong database không
-    const user = await this.sharedUserRepository.findUnique({ email, deletedAt: null })
+    const user = await this.sharedUserRepository.findUnique({ email })
     if (!user) {
       throw EmailNotExistsException
     }
@@ -249,7 +249,6 @@ export class AuthService {
       this.sharedUserRepository.update(
         {
           id: user.id,
-          deletedAt: null,
         },
         {
           password: hashedPassword,
@@ -270,7 +269,7 @@ export class AuthService {
 
   async setupTwoFactorAuth(userId: number) {
     // 1. Kiểm tra user có tồn tại trong database không
-    const user = await this.sharedUserRepository.findUnique({ id: userId, deletedAt: null })
+    const user = await this.sharedUserRepository.findUnique({ id: userId })
     if (!user) {
       throw EmailNotExistsException
     }
@@ -285,7 +284,6 @@ export class AuthService {
     await this.sharedUserRepository.update(
       {
         id: userId,
-        deletedAt: null,
       },
       {
         totpSecret: secret,
@@ -299,7 +297,7 @@ export class AuthService {
 
   async disableTwoFactorAuth({ userId, totpCode, code }: DisableTwoFactorBodyType & { userId: number }) {
     // 1. Kiểm tra user có tồn tại trong database không
-    const user = await this.sharedUserRepository.findUnique({ id: userId, deletedAt: null })
+    const user = await this.sharedUserRepository.findUnique({ id: userId })
     if (!user) {
       throw EmailNotExistsException
     }
@@ -330,7 +328,6 @@ export class AuthService {
     await this.sharedUserRepository.update(
       {
         id: userId,
-        deletedAt: null,
       },
       {
         totpSecret: null,

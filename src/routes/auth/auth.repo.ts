@@ -73,11 +73,12 @@ export class AuthRepository {
     return this.prismaService.device.create({ data })
   }
 
-  async findUniqueUserIncludeRole(
-    where: WhereUniqueUserType,
-  ): Promise<(UserType & { role: RoleType }) | null> {
-    return this.prismaService.user.findUnique({
-      where,
+  async findUniqueUserIncludeRole(where: WhereUniqueUserType): Promise<(UserType & { role: RoleType }) | null> {
+    return this.prismaService.user.findFirst({
+      where: {
+        ...where,
+        deletedAt: null,
+      },
       include: {
         role: true,
       },

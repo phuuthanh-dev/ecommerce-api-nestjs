@@ -15,7 +15,6 @@ export class ProfileService {
   async getProfile(userId: number) {
     const user = await this.sharedUserRepository.findUniqueIncludeRolePermissions({
       id: userId,
-      deletedAt: null,
     })
 
     if (!user) {
@@ -30,7 +29,6 @@ export class ProfileService {
       return await this.sharedUserRepository.update(
         {
           id: userId,
-          deletedAt: null,
         },
         { ...body, updatedById: userId },
       )
@@ -47,7 +45,6 @@ export class ProfileService {
       const { password, newPassword } = body
       const user = await this.sharedUserRepository.findUnique({
         id: userId,
-        deletedAt: null,
       })
 
       if (!user) {
@@ -64,7 +61,6 @@ export class ProfileService {
       await this.sharedUserRepository.update(
         {
           id: userId,
-          deletedAt: null,
         },
         {
           password: hashedNewPassword,
