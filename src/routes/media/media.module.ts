@@ -4,8 +4,8 @@ import { MulterModule } from '@nestjs/platform-express'
 import multer from 'multer'
 import path from 'path'
 import { generateRandomFilename } from 'src/shared/helpers'
-
-const UPLOAD_DIR = path.resolve('upload')
+import { existsSync, mkdirSync } from 'fs'
+import { UPLOAD_DIR } from 'src/shared/constants/other.constant'
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -14,7 +14,7 @@ const storage = multer.diskStorage({
   filename: function (req, file, cb) {
     const newFilename = generateRandomFilename(file.originalname)
     cb(null, newFilename)
-  }
+  },
 })
 
 @Module({
@@ -26,4 +26,10 @@ const storage = multer.diskStorage({
   controllers: [MediaController],
   providers: [],
 })
-export class MediaModule {}
+export class MediaModule {
+  constructor() {
+    if (!existsSync(UPLOAD_DIR)) {
+      mkdirSync(UPLOAD_DIR, { recursive: true })
+    }
+  }
+}
